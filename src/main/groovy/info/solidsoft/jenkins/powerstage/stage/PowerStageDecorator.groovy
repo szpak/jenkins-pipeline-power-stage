@@ -15,36 +15,40 @@
  */
 package info.solidsoft.jenkins.powerstage.stage
 
+import java.util.concurrent.TimeUnit
+
 /**
- * A stage creator.
+ * A stage decorator.
  *
- * In addition to a stage creation it provides also other stage functionality (such as a separate stage for a manual approval request).
+ * It decorates stage with extra features within a stage context (such as locking and retrying).
+ *
+ * TODO: Consider if having pluggable decorators wouldn't be better to wrap them one by one also with internal ones.
  *
  * @author Marcin Zajączkowski, https://blog.solidsoft.info/
  */
-class PowerStageCreator {
+class PowerStageDecorator {
 
-    private final Script pipelineScript  //in fact org.jenkinsci.plugins.workflow.cps.CpsScript
+    private static final int DEFAULT_STAGE_TIMEOUT_IN_SECONDS = 15 * 60
 
-    PowerStageCreator(Script pipelineScript) {
+    private final Script pipelineScript
+
+    PowerStageDecorator(Script pipelineScript) {
         this.pipelineScript = pipelineScript
     }
 
-    int createStageAndReturnedUpdateNextMilestoneNumber(String stageName, int initialNextMilestoneNumber, Closure stageBlock) {
+    int decorateStageAndReturnedUpdateNextMilestoneNumber(String stageName, int initialNextMilestoneNumber, Closure stageBlock) {
 
         int nextMilestoneNumber = initialNextMilestoneNumber
-        PowerStageDecorator stageDecorator = new PowerStageDecorator(pipelineScript)
-
         executeInScriptContext {
 
-            stage(stageName) {
-                echo "Executing stage {$stageName}"
-                milestone nextMilestoneNumber++
-                nextMilestoneNumber = stageDecorator.decorateStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
-                milestone nextMilestoneNumber++
+            lock(resource: generateLockResourceName(stageName), inversePrecedence: true) {
+                //TODO: Consider extra timeouts - including lock awaiting time or per whole stage (including all retries)
+                timeout([time: DEFAULT_STAGE_TIMEOUT_IN_SECONDS, unit: TimeUnit.SECONDS]) {
+                    milestone nextMilestoneNumber++
+                    stageBlock()
+                }
             }
         }
-
         return nextMilestoneNumber
     }
 
@@ -52,5 +56,9 @@ class PowerStageCreator {
         //pipelineScript.with { stageBlock.call() } doesn't seem to work on Jenkins
         stageBlock.delegate = pipelineScript
         return stageBlock.call()
+    }
+
+    private String generateLockResourceName(String stageName) {
+        return "${env.JOB_NAME}-${stageName}"
     }
 }
