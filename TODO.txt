@@ -1,0 +1,12 @@
+Some ideas to implement:
+
+ ✔ synchronization per stage
+ ✔ stage superseding with milestones
+ - timeout
+ - retrying
+ - basic configuration (e.g. number of retries)
+ - manual retrying
+ - pluggable providers for notifications (e.g. Slack, email, ...)
+ - "unit" testing (with sample pipelineScript - for regression)
+ - plugin sanity check at startup (for internally used plugins (such as for milestones) and pluggable providers)
+ - ??? (please report a feature proposal or even better a PR :) )
