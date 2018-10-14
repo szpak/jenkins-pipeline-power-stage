@@ -3,7 +3,7 @@ Some ideas to implement:
  ✔ synchronization per stage
  ✔ stage superseding with milestones
  ✔ timeout
- - retrying
+ ✔ retrying
  - basic configuration (e.g. number of retries)
  - manual retrying
  - pluggable providers for notifications (e.g. Slack, email, ...)

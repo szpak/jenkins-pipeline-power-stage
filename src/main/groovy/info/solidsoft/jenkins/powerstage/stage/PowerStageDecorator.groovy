@@ -29,8 +29,10 @@ import java.util.concurrent.TimeUnit
 class PowerStageDecorator {
 
     private static final int DEFAULT_STAGE_TIMEOUT_IN_SECONDS = 15 * 60
+    private static final int DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS = 3
 
     private final Script pipelineScript
+    private final int numberOfAttempts = DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS
 
     PowerStageDecorator(Script pipelineScript) {
         this.pipelineScript = pipelineScript
@@ -39,13 +41,24 @@ class PowerStageDecorator {
     int decorateStageAndReturnedUpdateNextMilestoneNumber(String stageName, int initialNextMilestoneNumber, Closure stageBlock) {
 
         int nextMilestoneNumber = initialNextMilestoneNumber
-        executeInScriptContext {
+        int currentAttempt = 0
 
-            lock(resource: generateLockResourceName(stageName), inversePrecedence: true) {
-                //TODO: Consider extra timeouts - including lock awaiting time or per whole stage (including all retries)
-                timeout([time: DEFAULT_STAGE_TIMEOUT_IN_SECONDS, unit: TimeUnit.SECONDS]) {
-                    milestone nextMilestoneNumber++
-                    stageBlock()
+        executeInScriptContext {
+            retry(numberOfAttempts) {
+                currentAttempt++    //TODO: Report feature request to have attempt number available in "it" within retry closure
+                String executionName = prepareExecutionName(stageName, currentAttempt)
+                echo "Executing ${executionName}..."
+
+                lock(resource: generateLockResourceName(stageName), inversePrecedence: true) {
+                    //TODO: Consider extra timeouts - including lock awaiting time or per whole stage (including all retries)
+                    timeout([time: DEFAULT_STAGE_TIMEOUT_IN_SECONDS, unit: TimeUnit.SECONDS]) {
+                        milestone nextMilestoneNumber++
+                        stageBlock()
+                        echo "Adjusting current milestone to maximum configured number of attempts"
+                        while ((nextMilestoneNumber - initialNextMilestoneNumber) <= numberOfAttempts) {
+                            milestone nextMilestoneNumber++
+                        }
+                    }
                 }
             }
         }
@@ -58,7 +71,11 @@ class PowerStageDecorator {
         return stageBlock.call()
     }
 
+    private String prepareExecutionName(String stageName, int currentAttempt) {
+        return "stage '${stageName}' (attempt: ${currentAttempt}/${numberOfAttempts})"
+    }
+
     private String generateLockResourceName(String stageName) {
-        return "${env.JOB_NAME}-${stageName}"
+        return "${pipelineScript.env.JOB_NAME}-${stageName}"
     }
 }
