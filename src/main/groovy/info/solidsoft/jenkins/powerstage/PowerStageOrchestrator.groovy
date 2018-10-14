@@ -39,8 +39,14 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
     }
 
     void simpleStage(String stageName, Closure stageBlock) {
-        nextMilestoneNumber = new PowerStageCreator(pipelineScript, createConfig())
-            .createStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
+//        customStage(stageName, stageBlock)  //TODO: Why it fails silently???
+        customStage(stageName, createConfig {
+            maximumNumberOfAttempts = 1
+        }, stageBlock)
+    }
+
+    void defaultStage(String stageName, Closure stageBlock) {
+        customStage(stageName, createConfig(), stageBlock)
     }
 
     void customStage(String stageName, PowerStageConfigView config = createConfig(), Closure stageBlock) {

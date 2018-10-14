@@ -40,7 +40,7 @@ class PowerStageCreator {
         executeInScriptContext {
 
             stage(stageName) {
-                echo "Executing stage {$stageName}"
+                echo "Executing stage ${stageName}"
                 milestone nextMilestoneNumber++
                 nextMilestoneNumber = stageDecorator.decorateStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
                 milestone nextMilestoneNumber++
