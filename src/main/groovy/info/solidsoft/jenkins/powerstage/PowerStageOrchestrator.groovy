@@ -51,6 +51,7 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
     static PowerStageConfigView createConfig(@DelegatesTo(PowerStageConfig) Closure configBlock = {}) {
         PowerStageConfig config = new PowerStageConfig()
         configBlock.delegate = config
+        configBlock.resolveStrategy = Closure.DELEGATE_FIRST    //without that changes from configBlock are not applied in config
         configBlock()
         return config
     }
