@@ -29,13 +29,15 @@ import java.util.concurrent.TimeUnit
 class PowerStageDecorator {
 
     private static final int DEFAULT_STAGE_TIMEOUT_IN_SECONDS = 15 * 60
-    private static final int DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS = 3
 
     private final Script pipelineScript
-    private final int numberOfAttempts = DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS
+    private final PowerStageConfigView config   //Maybe only pass relevant part of configuration? - assuming decorators in use
+    private final int numberOfAttempts
 
-    PowerStageDecorator(Script pipelineScript) {
+    PowerStageDecorator(Script pipelineScript, PowerStageConfigView config) {
         this.pipelineScript = pipelineScript
+        this.config = config
+        this.numberOfAttempts = config.maximumNumberOfAttempts
     }
 
     int decorateStageAndReturnedUpdateNextMilestoneNumber(String stageName, int initialNextMilestoneNumber, Closure stageBlock) {

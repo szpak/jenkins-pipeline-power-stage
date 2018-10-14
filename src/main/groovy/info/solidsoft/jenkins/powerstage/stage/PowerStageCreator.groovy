@@ -25,15 +25,17 @@ package info.solidsoft.jenkins.powerstage.stage
 class PowerStageCreator {
 
     private final Script pipelineScript  //in fact org.jenkinsci.plugins.workflow.cps.CpsScript
+    private final PowerStageConfigView config
 
-    PowerStageCreator(Script pipelineScript) {
+    PowerStageCreator(Script pipelineScript, PowerStageConfigView config) {
         this.pipelineScript = pipelineScript
+        this.config = config
     }
 
     int createStageAndReturnedUpdateNextMilestoneNumber(String stageName, int initialNextMilestoneNumber, Closure stageBlock) {
 
         int nextMilestoneNumber = initialNextMilestoneNumber
-        PowerStageDecorator stageDecorator = new PowerStageDecorator(pipelineScript)
+        PowerStageDecorator stageDecorator = new PowerStageDecorator(pipelineScript, config)
 
         executeInScriptContext {
 

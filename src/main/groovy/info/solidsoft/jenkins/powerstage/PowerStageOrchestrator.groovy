@@ -15,6 +15,8 @@
  */
 package info.solidsoft.jenkins.powerstage
 
+import info.solidsoft.jenkins.powerstage.stage.PowerStageConfig
+import info.solidsoft.jenkins.powerstage.stage.PowerStageConfigView
 import info.solidsoft.jenkins.powerstage.stage.PowerStageCreator;
 
 /**
@@ -24,6 +26,7 @@ import info.solidsoft.jenkins.powerstage.stage.PowerStageCreator;
  *
  * @author Marcin Zajączkowski, https://blog.solidsoft.info/
  */
+@SuppressWarnings("unused")
 class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
 
     private final Script pipelineScript
@@ -36,7 +39,19 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
     }
 
     void simpleStage(String stageName, Closure stageBlock) {
-        nextMilestoneNumber = new PowerStageCreator(pipelineScript)
+        nextMilestoneNumber = new PowerStageCreator(pipelineScript, createConfig())
             .createStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
+    }
+
+    void customStage(String stageName, PowerStageConfigView config = createConfig(), Closure stageBlock) {
+        nextMilestoneNumber = new PowerStageCreator(pipelineScript, config)
+            .createStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
+    }
+
+    static PowerStageConfigView createConfig(@DelegatesTo(PowerStageConfig) Closure configBlock = {}) {
+        PowerStageConfig config = new PowerStageConfig()
+        configBlock.delegate = config
+        configBlock()
+        return config
     }
 }

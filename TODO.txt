@@ -4,7 +4,8 @@ Some ideas to implement:
  ✔ stage superseding with milestones
  ✔ timeout
  ✔ retrying
- - basic configuration (e.g. number of retries)
+ ✔ basic configuration (e.g. number of retries)
+ - manual stage execution
  - manual retrying
  - pluggable providers for notifications (e.g. Slack, email, ...)
  - "unit" testing (with sample pipelineScript - for regression)
