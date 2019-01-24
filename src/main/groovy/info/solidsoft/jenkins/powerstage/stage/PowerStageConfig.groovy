@@ -22,4 +22,5 @@ class PowerStageConfig implements PowerStageConfigView {
     private static final int DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS = 3
 
     int maximumNumberOfAttempts = DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS
+    StageExecutionMode stageExecutionMode = StageExecutionMode.AUTO
 }

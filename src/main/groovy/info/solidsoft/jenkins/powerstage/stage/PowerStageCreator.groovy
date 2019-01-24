@@ -39,6 +39,14 @@ class PowerStageCreator {
 
         executeInScriptContext {
 
+            if (config.stageExecutionMode == StageExecutionMode.MANUAL) {
+                stage("${stageName} approval") {
+                    //TODO: Add notifications about awaiting approval
+                    input id: "${stageName.toLowerCase()}ApprovalInput", message: "Execute ${stageName}?"
+                }
+                milestone nextMilestoneNumber++
+            }
+
             stage(stageName) {
                 echo "Executing stage ${stageName}"
                 milestone nextMilestoneNumber++
