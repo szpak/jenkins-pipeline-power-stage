@@ -23,4 +23,13 @@ class PowerStageConfig implements PowerStageConfigView {
 
     int maximumNumberOfAttempts = DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS
     StageExecutionMode stageExecutionMode = StageExecutionMode.AUTO
+
+    //Groovy AST cannot be used to simplify that...
+    static PowerStageConfig fromGlobalConfig(PowerStageConfigView globalConfig) {
+        //If you are curios, no, "with {}" doesn't work with Pipeline CPS
+        PowerStageConfig config = new PowerStageConfig()
+        config.maximumNumberOfAttempts = globalConfig.maximumNumberOfAttempts
+        config.stageExecutionMode = globalConfig.stageExecutionMode
+        return config
+    }
 }

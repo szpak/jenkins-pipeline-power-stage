@@ -49,11 +49,13 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
 //    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER, PowerStageConfigView globalConfig = createConfig()) {
 
     static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER) {
-        return stageOrchestrator(pipelineScript, initialNextMilestoneNumber, createConfig())
+        return stageOrchestrator(pipelineScript, initialNextMilestoneNumber, createGlobalConfig())
     }
 
-    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER, PowerStageConfigView globalConfig) {
+    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER,
+                                                    PowerStageConfigView globalConfig) {
         return new PowerStageOrchestrator(pipelineScript, initialNextMilestoneNumber, globalConfig)
+        //TODO: Display configuration used to create PowerStageOrchestrator instance
     }
 
     void simpleStage(String stageName, Closure stageBlock) {
@@ -72,8 +74,16 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
             .createStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
     }
 
-    static PowerStageConfigView createConfig(@DelegatesTo(PowerStageConfig) Closure configBlock = {}) {
-        PowerStageConfig config = new PowerStageConfig()
+    static PowerStageConfigView createGlobalConfig(@DelegatesTo(PowerStageConfig) Closure configBlock = {}) {
+        return configureDelegationInConfig(new PowerStageConfig(), configBlock)
+    }
+
+    //TODO: Duplication
+    PowerStageConfigView createConfig(@DelegatesTo(PowerStageConfig) Closure configBlock = {}) {
+        return configureDelegationInConfig(PowerStageConfig.fromGlobalConfig(globalConfig), configBlock)
+    }
+
+    private static PowerStageConfig configureDelegationInConfig(PowerStageConfig config, Closure configBlock) {
         configBlock.delegate = config
         configBlock.resolveStrategy = Closure.DELEGATE_FIRST    //without that changes from configBlock are not applied in config
         configBlock()
