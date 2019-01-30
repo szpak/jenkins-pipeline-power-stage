@@ -29,13 +29,31 @@ import info.solidsoft.jenkins.powerstage.stage.PowerStageCreator;
 @SuppressWarnings("unused")
 class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
 
+    private static final int DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER = 1
+
     private final Script pipelineScript
+    private final PowerStageConfigView globalConfig
 
     int nextMilestoneNumber
 
-    PowerStageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = 1) {
+    PowerStageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber, PowerStageConfigView globalConfig) {
         this.pipelineScript = pipelineScript
         this.nextMilestoneNumber = initialNextMilestoneNumber
+        this.globalConfig = globalConfig
+    }
+
+//    //TODO: That construction fails on Jenkins with:
+//    //    ProxyException: org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast object 'info.solidsoft.jenkins.powerstage.stage.PowerStageConfig@1ab38aa'
+//    //    with class 'info.solidsoft.jenkins.powerstage.stage.PowerStageConfig' to class 'info.solidsoft.jenkins.powerstage.PowerStageOrchestrator'
+//    //Workaround applied...
+//    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER, PowerStageConfigView globalConfig = createConfig()) {
+
+    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER) {
+        return stageOrchestrator(pipelineScript, initialNextMilestoneNumber, createConfig())
+    }
+
+    static PowerStageOrchestrator stageOrchestrator(Script pipelineScript, int initialNextMilestoneNumber = DEFAULT_INITIAL_NEXT_MILESTONE_NUMBER, PowerStageConfigView globalConfig) {
+        return new PowerStageOrchestrator(pipelineScript, initialNextMilestoneNumber, globalConfig)
     }
 
     void simpleStage(String stageName, Closure stageBlock) {
@@ -49,7 +67,7 @@ class PowerStageOrchestrator {  //TODO: PowerPipelineOrchestrator?
         customStage(stageName, createConfig(), stageBlock)
     }
 
-    void customStage(String stageName, PowerStageConfigView config = createConfig(), Closure stageBlock) {
+    void customStage(String stageName, PowerStageConfigView config = globalConfig, Closure stageBlock) {
         nextMilestoneNumber = new PowerStageCreator(pipelineScript, config)
             .createStageAndReturnedUpdateNextMilestoneNumber(stageName, nextMilestoneNumber, stageBlock)
     }

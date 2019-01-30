@@ -16,7 +16,7 @@
 package info.solidsoft.jenkins.powerstage.stage
 
 //TODO: Think about using builder pattern
-//TODO: Is it needed to add also PowerStageGlobalConfing (per pipeline)?
+//TODO: Is it needed to add also PowerStageGlobalConfing (per pipeline)? Instead keeping PowerStageConfig as global copy
 class PowerStageConfig implements PowerStageConfigView {
 
     private static final int DEFAULT_MAXIMUM_NUMBER_OF_ATTEMPTS = 3
